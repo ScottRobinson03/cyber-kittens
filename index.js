@@ -5,18 +5,18 @@ const { User } = require('./db');
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 
-app.get('/', async (req, res, next) => {
-  try {
-    res.send(`
-      <h1>Welcome to Cyber Kittens!</h1>
-      <p>Cats are available at <a href="/kittens/1">/kittens/:id</a></p>
-      <p>Create a new cat at <b><code>POST /kittens</code></b> and delete one at <b><code>DELETE /kittens/:id</code></b></p>
-      <p>Log in via POST /login or register via POST /register</p>
-    `);
-  } catch (error) {
-    console.error(error);
-    next(error)
-  }
+app.get("/", async (req, res, next) => {
+    try {
+        res.send(`
+            <h1>Welcome to Cyber Kittens!</h1>
+            <p>Cats are available at <a href="/kittens/1">/kittens/:id</a></p>
+            <p>Create a new cat at <b><code>POST /kittens</code></b> and delete one at <b><code>DELETE /kittens/:id</code></b></p>
+            <p>Log in via POST /login or register via POST /register</p>
+        `);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
 });
 
 // Verifies token with jwt.verify and sets req.user
@@ -38,10 +38,10 @@ app.get('/', async (req, res, next) => {
 // TODO - takes an id and deletes the cat with that id
 
 // error handling middleware, so failed tests receive them
-app.use((error, req, res, next) => {
-  console.error('SERVER ERROR: ', error);
-  if(res.statusCode < 400) res.status(500);
-  res.send({error: error.message, name: error.name, message: error.message});
+app.use((error, _, res, __) => {
+    console.error("SERVER ERROR: ", error);
+    if (res.statusCode < 400) res.status(500);
+    res.send({ error: error.message, name: error.name, message: error.message });
 });
 
 // we export the app, not listening in here, so that we can run tests
