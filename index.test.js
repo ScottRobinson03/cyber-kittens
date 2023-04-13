@@ -55,47 +55,50 @@ describe('Endpoints', () => {
         });
     });
 
-    describe.skip('login and register', () => {
-
-        describe('POST /register', () => {
-            it('should send back success with token', async () => {
-                expect(registerResponse.status).toBe(200);
+    describe("login and register", () => {
+        describe("POST /register", () => {
+            it("should send back success with token", async () => {
+                expect(registerResponse.status).toBe(201);
                 expect(registerResponse.body).toEqual({
-                    message: 'success',
-                    token: expect.stringMatching(/^[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+$/)
+                    message: "success",
+                    token: expect.stringMatching(
+                        /^[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+$/
+                    ),
                 });
             });
-            it('should create user with username', async () => {
-                const foundUser = await User.findOne({ where: { username: 'buster' } });
+            it("should create user with username", async () => {
+                const foundUser = await User.findOne({ where: { username: "buster" } });
                 expect(foundUser).toBeTruthy();
-                expect(foundUser.username).toBe('buster');
+                expect(foundUser.username).toBe("buster");
             });
-            it('should hash password', async () => {
-                const foundUser = await User.findOne({ where: { username: 'buster' } });
+            it("should hash password", async () => {
+                const foundUser = await User.findOne({ where: { username: "buster" } });
                 expect(foundUser).toBeTruthy();
                 expect(foundUser.password).not.toBe(testUserData.password);
                 expect(foundUser.password).toEqual(expect.stringMatching(/^\$2[ayb]\$.{56}$/));
             });
         });
-    
-        describe('POST /login', () => {
-            it('should send back success with token', async () => {
+
+        describe("POST /login", () => {
+            it("should send back success with token", async () => {
                 expect(loginResponse.status).toBe(200);
                 expect(loginResponse.body).toEqual({
-                    message: 'success',
-                    token: expect.stringMatching(/^[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+$/)
+                    message: "success",
+                    token: expect.stringMatching(
+                        /^[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+$/
+                    ),
                 });
             });
-            it('if password incorrect, should send back 401 unauthorized, with message', async () => {
+            it("if password incorrect, should send back 401 unauthorized, with message", async () => {
                 const incorrectLoginResponse = await request(app)
-                    .post('/login')
+                    .post("/login")
                     .send({
-                        username: 'buster',
-                        password: 'notright'
+                        username: "buster",
+                        password: "notright",
                     })
                     .catch(err => console.error(err));
                 expect(incorrectLoginResponse.status).toBe(401);
-                expect(incorrectLoginResponse.text).toBe('Unauthorized');
+                expect(incorrectLoginResponse.text).toBe("Unauthorized");
             });
         });
     });
