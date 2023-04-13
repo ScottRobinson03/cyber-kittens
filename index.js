@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 const express = require("express");
 const app = express();
 const { User, Kitten } = require("./db");
@@ -65,11 +66,41 @@ async function getKittenMW(req, resp, next) {
     next();
 }
 
+async function loginInfoMW(req, resp, next) {
+    const { username, password } = req.body;
+    if (!(username && password)) {
+        resp.sendStatus(400);
+        return;
+    }
+    next();
+}
+
 // POST /register
 // OPTIONAL - takes req.body of {username, password} and creates a new user with the hashed password
+app.post("/register", loginInfoMW, async (req, resp) => {
+    const hash = await bcrypt.hash(req.body.password, Math.max(5, Math.floor(Math.random() * 15))); // randint 5-15 inclusive
+    const createdUser = await User.create({ username: req.body.username, password: hash });
+
+    const token = jwt.sign(createdUser.toJSON(), JWT_SECRET);
+    resp.status(201).json({ message: "success", token });
+});
 
 // POST /login
 // OPTIONAL - takes req.body of {username, password}, finds user by username, and compares the password with the hashed version from the DB
+app.post("/login", loginInfoMW, async (req, resp) => {
+    const matchingUser = await User.findOne({ where: { username: req.body.username } });
+
+    // NB: We want to compare hashes even if username is not found to prevent timing attacks
+    const storedPassword = matchingUser?.password ?? "a-fake-hash";
+    const passwordIsSame = await bcrypt.compare(req.body.password, storedPassword);
+    if (!matchingUser || !passwordIsSame) {
+        resp.sendStatus(401);
+        return;
+    }
+
+    const token = jwt.sign(matchingUser.toJSON(), JWT_SECRET);
+    resp.json({ message: "success", token });
+});
 
 // GET /kittens/:id
 // TODO - takes an id and returns the cat with that id
